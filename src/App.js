@@ -97,7 +97,7 @@ checkoutButton.addEventListener('click', async function (e) {
     const data = new URLSearchParams(formData);
     const objData = Object.fromEntries(data);
     //const message = formatMessage(objData);
-    //window.open('http://wa.me/6285155065596?text=' + encodeURIComponent(message))
+    //window.open('http://wa.me/?text=' + encodeURIComponent(message))
 
     // minta transaksi token menggunakan ajax / fetch
     try{
