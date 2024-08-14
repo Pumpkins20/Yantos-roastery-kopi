@@ -1,17 +1,5 @@
 <?php
-/*Install Midtrans PHP Library (https://github.com/Midtrans/midtrans-php)
-composer require midtrans/midtrans-php
-                              
-Alternatively, if you are not using **Composer**, you can download midtrans-php library 
-(https://github.com/Midtrans/midtrans-php/archive/master.zip), and then require 
-the file manually.   
-
-require_once dirname(__FILE__) . '/pathofproject/Midtrans.php'; */
-
-
-require_once dirname(__FILE__) . '/midtrans-php-master/Midtrans.php'; 
-
-//SAMPLE REQUEST START HERE
+require_once dirname(__FILE__) . '/midtrans-php-master/Midtrans.php';
 
 // Set your Merchant Server Key
 \Midtrans\Config::$serverKey = 'SB-Mid-server-2b62HDVzSWTjKGiGAViry7hn';
@@ -22,20 +10,42 @@ require_once dirname(__FILE__) . '/midtrans-php-master/Midtrans.php';
 // Set 3DS transaction for credit card to true
 \Midtrans\Config::$is3ds = true;
 
-$params = array(
-    'transaction_details' => array(
-        'order_id' => rand(),
-        'gross_amount' => $_POST['total'],
-    ),
-    'item_details' => json_decode($_POST['items'],true),
-    'customer_details' => array(
-        'first_name' => $_POST['name'],
-        'email' => $_POST['email'],
-        'phone' => $_POST['phone'],
-    ),
-);
+try {
+    // Validasi apakah POST data ada dan tidak kosong
+    if (empty($_POST['total']) || empty($_POST['items']) || empty($_POST['name']) || empty($_POST['email']) || empty($_POST['phone'])) {
+        throw new Exception('Data POST tidak lengkap');
+    }
 
-$snapToken = \Midtrans\Snap::getSnapToken($params);
-echo $snapToken
+    $items = json_decode($_POST['items'], true);
+    
+    // Cek apakah decoding JSON berhasil
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Format JSON tidak valid pada items');
+    }
 
+    $params = array(
+        'transaction_details' => array(
+            'order_id' => rand(),
+            'gross_amount' => $_POST['total'],
+        ),
+        'item_details' => $items,
+        'customer_details' => array(
+            'first_name' => $_POST['name'],
+            'email' => $_POST['email'],
+            'phone' => $_POST['phone'],
+        ),
+    );
+
+    $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+    // Debugging: Cek hasil dari Snap Token
+    error_log('Snap Token: ' . $snapToken);
+
+    echo $snapToken;
+
+} catch (Exception $e) {
+    // Tangkap dan log error
+    error_log('Error: ' . $e->getMessage());
+    echo 'Error: ' . $e->getMessage();
+}
 ?>
